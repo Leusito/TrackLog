@@ -32,6 +32,8 @@ public final class TrackLogDao_Impl implements TrackLogDao {
 
   private final EntityInsertionAdapter<Training> __insertionAdapterOfTraining;
 
+  private final Converters __converters = new Converters();
+
   private final EntityInsertionAdapter<Competition> __insertionAdapterOfCompetition;
 
   private final EntityDeletionOrUpdateAdapter<Training> __deletionAdapterOfTraining;
@@ -48,7 +50,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR IGNORE INTO `training_table` (`id`,`date`,`description`,`distanceMeters`,`timeSeconds`,`notes`) VALUES (nullif(?, 0),?,?,?,?,?)";
+        return "INSERT OR IGNORE INTO `training_table` (`id`,`date`,`description`,`distanceMeters`,`times`,`notes`) VALUES (nullif(?, 0),?,?,?,?,?)";
       }
 
       @Override
@@ -58,7 +60,8 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         statement.bindLong(2, entity.getDate());
         statement.bindString(3, entity.getDescription());
         statement.bindLong(4, entity.getDistanceMeters());
-        statement.bindLong(5, entity.getTimeSeconds());
+        final String _tmp = __converters.fromList(entity.getTimes());
+        statement.bindString(5, _tmp);
         statement.bindString(6, entity.getNotes());
       }
     };
@@ -110,7 +113,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "UPDATE OR ABORT `training_table` SET `id` = ?,`date` = ?,`description` = ?,`distanceMeters` = ?,`timeSeconds` = ?,`notes` = ? WHERE `id` = ?";
+        return "UPDATE OR ABORT `training_table` SET `id` = ?,`date` = ?,`description` = ?,`distanceMeters` = ?,`times` = ?,`notes` = ? WHERE `id` = ?";
       }
 
       @Override
@@ -120,7 +123,8 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         statement.bindLong(2, entity.getDate());
         statement.bindString(3, entity.getDescription());
         statement.bindLong(4, entity.getDistanceMeters());
-        statement.bindLong(5, entity.getTimeSeconds());
+        final String _tmp = __converters.fromList(entity.getTimes());
+        statement.bindString(5, _tmp);
         statement.bindString(6, entity.getNotes());
         statement.bindLong(7, entity.getId());
       }
@@ -274,7 +278,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
           final int _cursorIndexOfDescription = CursorUtil.getColumnIndexOrThrow(_cursor, "description");
           final int _cursorIndexOfDistanceMeters = CursorUtil.getColumnIndexOrThrow(_cursor, "distanceMeters");
-          final int _cursorIndexOfTimeSeconds = CursorUtil.getColumnIndexOrThrow(_cursor, "timeSeconds");
+          final int _cursorIndexOfTimes = CursorUtil.getColumnIndexOrThrow(_cursor, "times");
           final int _cursorIndexOfNotes = CursorUtil.getColumnIndexOrThrow(_cursor, "notes");
           final List<Training> _result = new ArrayList<Training>(_cursor.getCount());
           while (_cursor.moveToNext()) {
@@ -287,11 +291,13 @@ public final class TrackLogDao_Impl implements TrackLogDao {
             _tmpDescription = _cursor.getString(_cursorIndexOfDescription);
             final int _tmpDistanceMeters;
             _tmpDistanceMeters = _cursor.getInt(_cursorIndexOfDistanceMeters);
-            final int _tmpTimeSeconds;
-            _tmpTimeSeconds = _cursor.getInt(_cursorIndexOfTimeSeconds);
+            final List<String> _tmpTimes;
+            final String _tmp;
+            _tmp = _cursor.getString(_cursorIndexOfTimes);
+            _tmpTimes = __converters.fromString(_tmp);
             final String _tmpNotes;
             _tmpNotes = _cursor.getString(_cursorIndexOfNotes);
-            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistanceMeters,_tmpTimeSeconds,_tmpNotes);
+            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistanceMeters,_tmpTimes,_tmpNotes);
             _result.add(_item);
           }
           return _result;
@@ -323,7 +329,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
           final int _cursorIndexOfDescription = CursorUtil.getColumnIndexOrThrow(_cursor, "description");
           final int _cursorIndexOfDistanceMeters = CursorUtil.getColumnIndexOrThrow(_cursor, "distanceMeters");
-          final int _cursorIndexOfTimeSeconds = CursorUtil.getColumnIndexOrThrow(_cursor, "timeSeconds");
+          final int _cursorIndexOfTimes = CursorUtil.getColumnIndexOrThrow(_cursor, "times");
           final int _cursorIndexOfNotes = CursorUtil.getColumnIndexOrThrow(_cursor, "notes");
           final List<Training> _result = new ArrayList<Training>(_cursor.getCount());
           while (_cursor.moveToNext()) {
@@ -336,11 +342,13 @@ public final class TrackLogDao_Impl implements TrackLogDao {
             _tmpDescription = _cursor.getString(_cursorIndexOfDescription);
             final int _tmpDistanceMeters;
             _tmpDistanceMeters = _cursor.getInt(_cursorIndexOfDistanceMeters);
-            final int _tmpTimeSeconds;
-            _tmpTimeSeconds = _cursor.getInt(_cursorIndexOfTimeSeconds);
+            final List<String> _tmpTimes;
+            final String _tmp;
+            _tmp = _cursor.getString(_cursorIndexOfTimes);
+            _tmpTimes = __converters.fromString(_tmp);
             final String _tmpNotes;
             _tmpNotes = _cursor.getString(_cursorIndexOfNotes);
-            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistanceMeters,_tmpTimeSeconds,_tmpNotes);
+            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistanceMeters,_tmpTimes,_tmpNotes);
             _result.add(_item);
           }
           return _result;

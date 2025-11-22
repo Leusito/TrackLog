@@ -10,6 +10,6 @@ data class Training(
     val date: Long, // Epoch millis
     val description: String,
     val distanceMeters: Int,
-    val timeSeconds: Int,
+    val times: List<String>,
     val notes: String
 )

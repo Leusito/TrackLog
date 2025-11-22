@@ -1,6 +1,7 @@
 package com.example.tracklog.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,7 +29,8 @@ fun AddEntryScreen(
     // Training fields
     var tDescription by remember { mutableStateOf("") }
     var tDistance by remember { mutableStateOf("") }
-    var tTime by remember { mutableStateOf("") }
+    var tCurrentTime by remember { mutableStateOf("") }
+    var tTimesList = remember { mutableStateListOf<String>() }
     var tNotes by remember { mutableStateOf("") }
 
     // Competition fields
@@ -65,13 +67,28 @@ fun AddEntryScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
-            OutlinedTextField(
-                value = tTime,
-                onValueChange = { tTime = it },
-                label = { Text("Time (s)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    value = tCurrentTime,
+                    onValueChange = { tCurrentTime = it },
+                    label = { Text("Time (s)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    if (tCurrentTime.isNotBlank()) {
+                        tTimesList.add(tCurrentTime)
+                        tCurrentTime = ""
+                    }
+                }) {
+                    Text("Add")
+                }
+            }
+            
+            if (tTimesList.isNotEmpty()) {
+                Text("Added Times: ${tTimesList.joinToString(", ")}", modifier = Modifier.padding(vertical = 8.dp))
+            }
             OutlinedTextField(
                 value = tNotes,
                 onValueChange = { tNotes = it },
@@ -85,7 +102,7 @@ fun AddEntryScreen(
                         date = dateMillis,
                         description = tDescription,
                         distanceMeters = tDistance.toIntOrNull() ?: 0,
-                        timeSeconds = tTime.toIntOrNull() ?: 0,
+                        times = tTimesList.toList(),
                         notes = tNotes
                     )
                     viewModel.saveTraining(training)

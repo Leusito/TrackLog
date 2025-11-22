@@ -38,7 +38,7 @@ fun DayDetailScreen(
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text("Desc: ${training.description}")
                         Text("Dist: ${training.distanceMeters}m")
-                        Text("Time: ${training.timeSeconds}s")
+                        Text("Times: ${training.times.joinToString(", ")}")
                     }
                 }
             }

@@ -4,8 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.tracklog.data.Training
+import com.example.tracklog.data.Competition
+import com.example.tracklog.data.Converters
+import com.example.tracklog.data.TrackLogDao
 
-@Database(entities = [Training::class, Competition::class], version = 1, exportSchema = false)
+@Database(entities = [Training::class, Competition::class], version = 2, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class TrackLogDatabase : RoomDatabase() {
 
     abstract fun trackLogDao(): TrackLogDao

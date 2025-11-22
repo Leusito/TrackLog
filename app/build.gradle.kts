@@ -1,4 +1,5 @@
 plugins {
+<<<<<<< HEAD
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
@@ -12,13 +13,30 @@ android {
         applicationId = "com.example.tracklog"
         minSdk = 26
         targetSdk = 34
+=======
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+}
+
+android {
+    namespace = "com.leusito.tracklog"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.leusito.tracklog"
+        minSdk = 26
+        targetSdk = 36
+>>>>>>> origin/main
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+<<<<<<< HEAD
         vectorDrawables {
             useSupportLibrary = true
         }
+=======
+>>>>>>> origin/main
     }
 
     buildTypes {
@@ -31,6 +49,7 @@ android {
         }
     }
     compileOptions {
+<<<<<<< HEAD
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -47,11 +66,19 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+=======
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+>>>>>>> origin/main
     }
 }
 
 dependencies {
 
+<<<<<<< HEAD
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
@@ -79,3 +106,14 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+=======
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}
+>>>>>>> origin/main

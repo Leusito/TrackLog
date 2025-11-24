@@ -27,12 +27,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddEntryScreen(
     dateMillis: Long,
+    initialType: String? = null, // "Training" or "Competition"
     viewModel: TrackLogViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit
 ) {
 
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Training", "Competition")
+    // 0 = Training, 1 = Competition
 
     // Training State
     var tDescription by remember { mutableStateOf("") }
@@ -72,8 +73,8 @@ fun AddEntryScreen(
     }
     val cEvents = remember { mutableStateListOf<LocalEventState>() }
 
-    // Load existing data
-    LaunchedEffect(dateMillis) {
+    // Load existing data or set based on initialType
+    LaunchedEffect(dateMillis, initialType) {
         val training = viewModel.getTrainingForDate(dateMillis)
         if (training != null) {
             selectedTab = 0
@@ -102,29 +103,30 @@ fun AddEntryScreen(
                     cEvents.add(state)
                 }
             } else {
-                // Default: Add one empty distance block for training and one for competition
-                if (tDistances.isEmpty()) {
-                    tDistances.add(LocalDistanceState())
-                }
-                if (cEvents.isEmpty()) {
-                    cEvents.add(LocalEventState())
+                // No existing data, use initialType
+                if (initialType == "Competition") {
+                    selectedTab = 1
+                    if (cEvents.isEmpty()) {
+                        cEvents.add(LocalEventState())
+                    }
+                } else {
+                    // Default to Training if initialType is "Training" or null (though it should be set)
+                    selectedTab = 0
+                    if (tDistances.isEmpty()) {
+                        tDistances.add(LocalDistanceState())
+                    }
                 }
             }
         }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        TabRow(selectedTabIndex = selectedTab) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
-                    text = { Text(title) }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        // TabRow Removed. Title to indicate mode.
+        Text(
+            text = if (selectedTab == 0) "New Training" else "New Competition",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         if (selectedTab == 0) {
             // Training Form

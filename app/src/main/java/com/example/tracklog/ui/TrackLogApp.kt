@@ -27,18 +27,24 @@ fun TrackLogApp() {
                     navController.navigate("${TrackLogScreen.DayDetail.name}/$date")
                 },
                 onAddEntry = { date ->
-                    navController.navigate("${TrackLogScreen.AddEntry.name}/$date")
+                    // FAB on Calendar now goes to DayDetail to enforce type selection logic
+                    navController.navigate("${TrackLogScreen.DayDetail.name}/$date")
                 }
             )
         }
         
         composable(
-            route = "${TrackLogScreen.AddEntry.name}/{date}",
-            arguments = listOf(navArgument("date") { type = NavType.LongType })
+            route = "${TrackLogScreen.AddEntry.name}/{date}?type={type}",
+            arguments = listOf(
+                navArgument("date") { type = NavType.LongType },
+                navArgument("type") { nullable = true; type = NavType.StringType }
+            )
         ) { backStackEntry ->
             val date = backStackEntry.arguments?.getLong("date") ?: System.currentTimeMillis()
+            val type = backStackEntry.arguments?.getString("type")
             AddEntryScreen(
                 dateMillis = date,
+                initialType = type,
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -51,8 +57,8 @@ fun TrackLogApp() {
             DayDetailScreen(
                 dateMillis = date,
                 navigateBack = { navController.popBackStack() },
-                onAddEntry = {
-                    navController.navigate("${TrackLogScreen.AddEntry.name}/$date")
+                onAddEntry = { type ->
+                    navController.navigate("${TrackLogScreen.AddEntry.name}/$date?type=$type")
                 }
             )
         }

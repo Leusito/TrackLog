@@ -86,19 +86,20 @@ fun CalendarScreen(
                 val date = currentMonth.atDay(day)
                 val epochMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 
+                val competition = competitions.find {
+                    val cDate = Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
+                    cDate == date
+                }
+                
                 val hasTraining = trainings.any { 
                     val tDate = Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
                     tDate == date
-                }
-                val hasCompetition = competitions.any {
-                    val cDate = Instant.ofEpochMilli(it.date).atZone(ZoneId.systemDefault()).toLocalDate()
-                    cDate == date
                 }
 
                 DayCell(
                     day = day,
                     hasTraining = hasTraining,
-                    hasCompetition = hasCompetition,
+                    competition = competition,
                     onClick = { onDateSelected(epochMillis) }
                 )
             }
@@ -117,12 +118,18 @@ fun CalendarScreen(
 fun DayCell(
     day: Int,
     hasTraining: Boolean,
-    hasCompetition: Boolean,
+    competition: Competition?,
     onClick: () -> Unit
 ) {
     val backgroundColor = when {
-        hasTraining -> Color.Blue.copy(alpha = 0.3f)
-        hasCompetition -> Color.Red.copy(alpha = 0.3f)
+        hasTraining -> Color(0xFF90EE90) // Light Green
+        competition != null -> {
+            if (competition.location == "AL") {
+                Color(0xFFFFCCCB) // Light Red
+            } else {
+                Color.Cyan // Cyan for PC
+            }
+        }
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
@@ -137,9 +144,8 @@ fun DayCell(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = day.toString(),
-                color = if (hasTraining || hasCompetition) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (hasTraining || competition != null) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant
             )
-            // Optional: Add a small dot if needed, but background color is enough
         }
     }
 }

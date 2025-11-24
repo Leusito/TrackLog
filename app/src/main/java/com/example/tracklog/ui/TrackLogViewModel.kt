@@ -62,6 +62,13 @@ class TrackLogViewModel(private val dao: TrackLogDao) : ViewModel() {
             dao.deleteCompetition(competition)
         }
     }
+
+    fun deleteDayContent(date: Long) {
+        viewModelScope.launch {
+            dao.deleteTrainingByDate(date)
+            dao.deleteCompetitionByDate(date)
+        }
+    }
     
     suspend fun getTrainingForDate(date: Long): Training? {
         return dao.getTrainingByDate(date)

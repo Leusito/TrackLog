@@ -1,12 +1,15 @@
 package com.example.tracklog.data;
 
 import android.database.Cursor;
+import android.os.CancellationSignal;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.CoroutinesRoom;
 import androidx.room.EntityDeletionOrUpdateAdapter;
 import androidx.room.EntityInsertionAdapter;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
+import androidx.room.SharedSQLiteStatement;
 import androidx.room.util.CursorUtil;
 import androidx.room.util.DBUtil;
 import androidx.sqlite.db.SupportSQLiteStatement;
@@ -44,13 +47,17 @@ public final class TrackLogDao_Impl implements TrackLogDao {
 
   private final EntityDeletionOrUpdateAdapter<Competition> __updateAdapterOfCompetition;
 
+  private final SharedSQLiteStatement __preparedStmtOfDeleteTrainingByDate;
+
+  private final SharedSQLiteStatement __preparedStmtOfDeleteCompetitionByDate;
+
   public TrackLogDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfTraining = new EntityInsertionAdapter<Training>(__db) {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR IGNORE INTO `training_table` (`id`,`date`,`description`,`distanceMeters`,`times`,`notes`) VALUES (nullif(?, 0),?,?,?,?,?)";
+        return "INSERT OR IGNORE INTO `training_table` (`id`,`date`,`description`,`distances`,`notes`) VALUES (nullif(?, 0),?,?,?,?)";
       }
 
       @Override
@@ -59,10 +66,9 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         statement.bindLong(1, entity.getId());
         statement.bindLong(2, entity.getDate());
         statement.bindString(3, entity.getDescription());
-        statement.bindLong(4, entity.getDistanceMeters());
-        final String _tmp = __converters.fromList(entity.getTimes());
-        statement.bindString(5, _tmp);
-        statement.bindString(6, entity.getNotes());
+        final String _tmp = __converters.toTrainingDistanceList(entity.getDistances());
+        statement.bindString(4, _tmp);
+        statement.bindString(5, entity.getNotes());
       }
     };
     this.__insertionAdapterOfCompetition = new EntityInsertionAdapter<Competition>(__db) {
@@ -113,7 +119,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "UPDATE OR ABORT `training_table` SET `id` = ?,`date` = ?,`description` = ?,`distanceMeters` = ?,`times` = ?,`notes` = ? WHERE `id` = ?";
+        return "UPDATE OR ABORT `training_table` SET `id` = ?,`date` = ?,`description` = ?,`distances` = ?,`notes` = ? WHERE `id` = ?";
       }
 
       @Override
@@ -122,11 +128,10 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         statement.bindLong(1, entity.getId());
         statement.bindLong(2, entity.getDate());
         statement.bindString(3, entity.getDescription());
-        statement.bindLong(4, entity.getDistanceMeters());
-        final String _tmp = __converters.fromList(entity.getTimes());
-        statement.bindString(5, _tmp);
-        statement.bindString(6, entity.getNotes());
-        statement.bindLong(7, entity.getId());
+        final String _tmp = __converters.toTrainingDistanceList(entity.getDistances());
+        statement.bindString(4, _tmp);
+        statement.bindString(5, entity.getNotes());
+        statement.bindLong(6, entity.getId());
       }
     };
     this.__updateAdapterOfCompetition = new EntityDeletionOrUpdateAdapter<Competition>(__db) {
@@ -146,6 +151,22 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         statement.bindString(5, entity.getResult());
         statement.bindLong(6, entity.getPosition());
         statement.bindLong(7, entity.getId());
+      }
+    };
+    this.__preparedStmtOfDeleteTrainingByDate = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM training_table WHERE date = ?";
+        return _query;
+      }
+    };
+    this.__preparedStmtOfDeleteCompetitionByDate = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM competition_table WHERE date = ?";
+        return _query;
       }
     };
   }
@@ -265,6 +286,58 @@ public final class TrackLogDao_Impl implements TrackLogDao {
   }
 
   @Override
+  public Object deleteTrainingByDate(final long date,
+      final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteTrainingByDate.acquire();
+        int _argIndex = 1;
+        _stmt.bindLong(_argIndex, date);
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteTrainingByDate.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object deleteCompetitionByDate(final long date,
+      final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteCompetitionByDate.acquire();
+        int _argIndex = 1;
+        _stmt.bindLong(_argIndex, date);
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteCompetitionByDate.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
   public Flow<List<Training>> getAllTrainings() {
     final String _sql = "SELECT * FROM training_table ORDER BY date DESC";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
@@ -277,8 +350,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
           final int _cursorIndexOfDescription = CursorUtil.getColumnIndexOrThrow(_cursor, "description");
-          final int _cursorIndexOfDistanceMeters = CursorUtil.getColumnIndexOrThrow(_cursor, "distanceMeters");
-          final int _cursorIndexOfTimes = CursorUtil.getColumnIndexOrThrow(_cursor, "times");
+          final int _cursorIndexOfDistances = CursorUtil.getColumnIndexOrThrow(_cursor, "distances");
           final int _cursorIndexOfNotes = CursorUtil.getColumnIndexOrThrow(_cursor, "notes");
           final List<Training> _result = new ArrayList<Training>(_cursor.getCount());
           while (_cursor.moveToNext()) {
@@ -289,15 +361,13 @@ public final class TrackLogDao_Impl implements TrackLogDao {
             _tmpDate = _cursor.getLong(_cursorIndexOfDate);
             final String _tmpDescription;
             _tmpDescription = _cursor.getString(_cursorIndexOfDescription);
-            final int _tmpDistanceMeters;
-            _tmpDistanceMeters = _cursor.getInt(_cursorIndexOfDistanceMeters);
-            final List<String> _tmpTimes;
+            final List<TrainingDistance> _tmpDistances;
             final String _tmp;
-            _tmp = _cursor.getString(_cursorIndexOfTimes);
-            _tmpTimes = __converters.fromString(_tmp);
+            _tmp = _cursor.getString(_cursorIndexOfDistances);
+            _tmpDistances = __converters.fromTrainingDistanceList(_tmp);
             final String _tmpNotes;
             _tmpNotes = _cursor.getString(_cursorIndexOfNotes);
-            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistanceMeters,_tmpTimes,_tmpNotes);
+            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistances,_tmpNotes);
             _result.add(_item);
           }
           return _result;
@@ -328,8 +398,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
           final int _cursorIndexOfDescription = CursorUtil.getColumnIndexOrThrow(_cursor, "description");
-          final int _cursorIndexOfDistanceMeters = CursorUtil.getColumnIndexOrThrow(_cursor, "distanceMeters");
-          final int _cursorIndexOfTimes = CursorUtil.getColumnIndexOrThrow(_cursor, "times");
+          final int _cursorIndexOfDistances = CursorUtil.getColumnIndexOrThrow(_cursor, "distances");
           final int _cursorIndexOfNotes = CursorUtil.getColumnIndexOrThrow(_cursor, "notes");
           final List<Training> _result = new ArrayList<Training>(_cursor.getCount());
           while (_cursor.moveToNext()) {
@@ -340,15 +409,13 @@ public final class TrackLogDao_Impl implements TrackLogDao {
             _tmpDate = _cursor.getLong(_cursorIndexOfDate);
             final String _tmpDescription;
             _tmpDescription = _cursor.getString(_cursorIndexOfDescription);
-            final int _tmpDistanceMeters;
-            _tmpDistanceMeters = _cursor.getInt(_cursorIndexOfDistanceMeters);
-            final List<String> _tmpTimes;
+            final List<TrainingDistance> _tmpDistances;
             final String _tmp;
-            _tmp = _cursor.getString(_cursorIndexOfTimes);
-            _tmpTimes = __converters.fromString(_tmp);
+            _tmp = _cursor.getString(_cursorIndexOfDistances);
+            _tmpDistances = __converters.fromTrainingDistanceList(_tmp);
             final String _tmpNotes;
             _tmpNotes = _cursor.getString(_cursorIndexOfNotes);
-            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistanceMeters,_tmpTimes,_tmpNotes);
+            _item = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistances,_tmpNotes);
             _result.add(_item);
           }
           return _result;
@@ -362,6 +429,52 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         _statement.release();
       }
     });
+  }
+
+  @Override
+  public Object getTrainingByDate(final long date,
+      final Continuation<? super Training> $completion) {
+    final String _sql = "SELECT * FROM training_table WHERE date = ? LIMIT 1";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    _statement.bindLong(_argIndex, date);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<Training>() {
+      @Override
+      @Nullable
+      public Training call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
+          final int _cursorIndexOfDescription = CursorUtil.getColumnIndexOrThrow(_cursor, "description");
+          final int _cursorIndexOfDistances = CursorUtil.getColumnIndexOrThrow(_cursor, "distances");
+          final int _cursorIndexOfNotes = CursorUtil.getColumnIndexOrThrow(_cursor, "notes");
+          final Training _result;
+          if (_cursor.moveToFirst()) {
+            final long _tmpId;
+            _tmpId = _cursor.getLong(_cursorIndexOfId);
+            final long _tmpDate;
+            _tmpDate = _cursor.getLong(_cursorIndexOfDate);
+            final String _tmpDescription;
+            _tmpDescription = _cursor.getString(_cursorIndexOfDescription);
+            final List<TrainingDistance> _tmpDistances;
+            final String _tmp;
+            _tmp = _cursor.getString(_cursorIndexOfDistances);
+            _tmpDistances = __converters.fromTrainingDistanceList(_tmp);
+            final String _tmpNotes;
+            _tmpNotes = _cursor.getString(_cursorIndexOfNotes);
+            _result = new Training(_tmpId,_tmpDate,_tmpDescription,_tmpDistances,_tmpNotes);
+          } else {
+            _result = null;
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
   }
 
   @Override
@@ -458,6 +571,53 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         _statement.release();
       }
     });
+  }
+
+  @Override
+  public Object getCompetitionByDate(final long date,
+      final Continuation<? super Competition> $completion) {
+    final String _sql = "SELECT * FROM competition_table WHERE date = ? LIMIT 1";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    _statement.bindLong(_argIndex, date);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<Competition>() {
+      @Override
+      @Nullable
+      public Competition call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
+          final int _cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(_cursor, "name");
+          final int _cursorIndexOfEvent = CursorUtil.getColumnIndexOrThrow(_cursor, "event");
+          final int _cursorIndexOfResult = CursorUtil.getColumnIndexOrThrow(_cursor, "result");
+          final int _cursorIndexOfPosition = CursorUtil.getColumnIndexOrThrow(_cursor, "position");
+          final Competition _result;
+          if (_cursor.moveToFirst()) {
+            final long _tmpId;
+            _tmpId = _cursor.getLong(_cursorIndexOfId);
+            final long _tmpDate;
+            _tmpDate = _cursor.getLong(_cursorIndexOfDate);
+            final String _tmpName;
+            _tmpName = _cursor.getString(_cursorIndexOfName);
+            final String _tmpEvent;
+            _tmpEvent = _cursor.getString(_cursorIndexOfEvent);
+            final String _tmpResult;
+            _tmpResult = _cursor.getString(_cursorIndexOfResult);
+            final int _tmpPosition;
+            _tmpPosition = _cursor.getInt(_cursorIndexOfPosition);
+            _result = new Competition(_tmpId,_tmpDate,_tmpName,_tmpEvent,_tmpResult,_tmpPosition);
+          } else {
+            _result = null;
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
   }
 
   @NonNull

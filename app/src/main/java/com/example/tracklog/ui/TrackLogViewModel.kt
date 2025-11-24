@@ -23,13 +23,31 @@ class TrackLogViewModel(private val dao: TrackLogDao) : ViewModel() {
 
     fun saveTraining(training: Training) {
         viewModelScope.launch {
-            dao.insertTraining(training)
+            // Enforce exclusivity: remove any competition on this date
+            dao.deleteCompetitionByDate(training.date)
+            
+            // Check if training exists to update or insert
+            val existing = dao.getTrainingByDate(training.date)
+            if (existing != null) {
+                dao.updateTraining(training.copy(id = existing.id))
+            } else {
+                dao.insertTraining(training)
+            }
         }
     }
 
     fun saveCompetition(competition: Competition) {
         viewModelScope.launch {
-            dao.insertCompetition(competition)
+            // Enforce exclusivity: remove any training on this date
+            dao.deleteTrainingByDate(competition.date)
+
+            // Check if competition exists to update or insert
+            val existing = dao.getCompetitionByDate(competition.date)
+            if (existing != null) {
+                dao.updateCompetition(competition.copy(id = existing.id))
+            } else {
+                dao.insertCompetition(competition)
+            }
         }
     }
 
@@ -45,13 +63,15 @@ class TrackLogViewModel(private val dao: TrackLogDao) : ViewModel() {
         }
     }
     
-    fun getTrainingsForDate(date: Long): StateFlow<List<Training>> {
-         return dao.getTrainingsForDate(date)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    suspend fun getTrainingForDate(date: Long): Training? {
+        return dao.getTrainingByDate(date)
     }
     
-    fun getCompetitionsForDate(date: Long): StateFlow<List<Competition>> {
-         return dao.getCompetitionsForDate(date)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    suspend fun getCompetitionForDate(date: Long): Competition? {
+        return dao.getCompetitionByDate(date)
     }
+    
+    fun getTrainingsForDate(date: Long) = dao.getTrainingsForDate(date)
+    
+    fun getCompetitionsForDate(date: Long) = dao.getCompetitionsForDate(date)
 }

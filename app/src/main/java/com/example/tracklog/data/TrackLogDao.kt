@@ -26,6 +26,12 @@ interface TrackLogDao {
     @Query("SELECT * FROM training_table WHERE date = :date")
     fun getTrainingsForDate(date: Long): Flow<List<Training>>
 
+    @Query("SELECT * FROM training_table WHERE date = :date LIMIT 1")
+    suspend fun getTrainingByDate(date: Long): Training?
+
+    @Query("DELETE FROM training_table WHERE date = :date")
+    suspend fun deleteTrainingByDate(date: Long)
+
     // Competition
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCompetition(competition: Competition)
@@ -41,4 +47,10 @@ interface TrackLogDao {
 
     @Query("SELECT * FROM competition_table WHERE date = :date")
     fun getCompetitionsForDate(date: Long): Flow<List<Competition>>
+
+    @Query("SELECT * FROM competition_table WHERE date = :date LIMIT 1")
+    suspend fun getCompetitionByDate(date: Long): Competition?
+
+    @Query("DELETE FROM competition_table WHERE date = :date")
+    suspend fun deleteCompetitionByDate(date: Long)
 }

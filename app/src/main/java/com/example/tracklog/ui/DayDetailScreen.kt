@@ -19,8 +19,8 @@ fun DayDetailScreen(
     navigateBack: () -> Unit,
     onAddEntry: () -> Unit
 ) {
-    val trainings by viewModel.getTrainingsForDate(dateMillis).collectAsState()
-    val competitions by viewModel.getCompetitionsForDate(dateMillis).collectAsState()
+    val trainings by viewModel.getTrainingsForDate(dateMillis).collectAsState(initial = emptyList())
+    val competitions by viewModel.getCompetitionsForDate(dateMillis).collectAsState(initial = emptyList())
     
     val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
     
@@ -37,8 +37,13 @@ fun DayDetailScreen(
                 Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text("Desc: ${training.description}")
-                        Text("Dist: ${training.distanceMeters}m")
-                        Text("Times: ${training.times.joinToString(", ")}")
+                        training.distances.forEach { distance ->
+                            Text("Dist: ${distance.distanceMeters}m")
+                            Text("Times: ${distance.times.joinToString(", ")}")
+                        }
+                        if (training.notes.isNotBlank()) {
+                            Text("Notes: ${training.notes}")
+                        }
                     }
                 }
             }

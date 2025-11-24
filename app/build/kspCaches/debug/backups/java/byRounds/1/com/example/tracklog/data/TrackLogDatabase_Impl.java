@@ -31,13 +31,13 @@ public final class TrackLogDatabase_Impl extends TrackLogDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(3) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `training_table` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `description` TEXT NOT NULL, `distanceMeters` INTEGER NOT NULL, `times` TEXT NOT NULL, `notes` TEXT NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `training_table` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `description` TEXT NOT NULL, `distances` TEXT NOT NULL, `notes` TEXT NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `competition_table` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `name` TEXT NOT NULL, `event` TEXT NOT NULL, `result` TEXT NOT NULL, `position` INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd8c56e3d31231997ab309ca9ca681a7b')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '592c554d17636c598870a27f1bc3b246')");
       }
 
       @Override
@@ -87,12 +87,11 @@ public final class TrackLogDatabase_Impl extends TrackLogDatabase {
       @NonNull
       public RoomOpenHelper.ValidationResult onValidateSchema(
           @NonNull final SupportSQLiteDatabase db) {
-        final HashMap<String, TableInfo.Column> _columnsTrainingTable = new HashMap<String, TableInfo.Column>(6);
+        final HashMap<String, TableInfo.Column> _columnsTrainingTable = new HashMap<String, TableInfo.Column>(5);
         _columnsTrainingTable.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTrainingTable.put("date", new TableInfo.Column("date", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTrainingTable.put("description", new TableInfo.Column("description", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsTrainingTable.put("distanceMeters", new TableInfo.Column("distanceMeters", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsTrainingTable.put("times", new TableInfo.Column("times", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsTrainingTable.put("distances", new TableInfo.Column("distances", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTrainingTable.put("notes", new TableInfo.Column("notes", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysTrainingTable = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesTrainingTable = new HashSet<TableInfo.Index>(0);
@@ -121,7 +120,7 @@ public final class TrackLogDatabase_Impl extends TrackLogDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "d8c56e3d31231997ab309ca9ca681a7b", "d6a43a0ad4585a9a8cb72c9b593efa3e");
+    }, "592c554d17636c598870a27f1bc3b246", "9badb00ba3826bdfd4721c1b6172f9ab");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

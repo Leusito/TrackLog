@@ -10,7 +10,7 @@ import com.example.tracklog.data.Competition
 import com.example.tracklog.data.Converters
 import com.example.tracklog.data.TrackLogDao
 
-@Database(entities = [Training::class, Competition::class], version = 2, exportSchema = false)
+@Database(entities = [Training::class, Competition::class], version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class TrackLogDatabase : RoomDatabase() {
 

@@ -56,7 +56,8 @@ fun CalendarScreen(
 
         // Days Grid
         val daysInMonth = currentMonth.lengthOfMonth()
-        val firstDayOfMonth = currentMonth.atDay(1).dayOfWeek.value % 7 // 0 for Sunday, etc.
+        // Monday start: Monday=1 -> 0, Sunday=7 -> 6
+        val firstDayOfMonth = currentMonth.atDay(1).dayOfWeek.value - 1
         
         val days = (1..daysInMonth).toList()
         val emptySlots = (0 until firstDayOfMonth).toList()
@@ -65,8 +66,8 @@ fun CalendarScreen(
             columns = GridCells.Fixed(7),
             modifier = Modifier.weight(1f)
         ) {
-            // Weekday headers
-            items(listOf("S", "M", "T", "W", "T", "F", "S")) { day ->
+            // Weekday headers (Monday start)
+            items(listOf("M", "T", "W", "T", "F", "S", "S")) { day ->
                 Text(
                     text = day,
                     textAlign = TextAlign.Center,
@@ -119,25 +120,26 @@ fun DayCell(
     hasCompetition: Boolean,
     onClick: () -> Unit
 ) {
+    val backgroundColor = when {
+        hasTraining -> Color.Blue.copy(alpha = 0.3f)
+        hasCompetition -> Color.Red.copy(alpha = 0.3f)
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
     Box(
         modifier = Modifier
             .aspectRatio(1f)
             .padding(2.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.small)
+            .background(backgroundColor, shape = MaterialTheme.shapes.small)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = day.toString())
-            Row {
-                if (hasTraining) {
-                    Box(modifier = Modifier.size(6.dp).background(Color.Green, shape = MaterialTheme.shapes.extraSmall))
-                }
-                if (hasCompetition) {
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Box(modifier = Modifier.size(6.dp).background(Color.Red, shape = MaterialTheme.shapes.extraSmall))
-                }
-            }
+            Text(
+                text = day.toString(),
+                color = if (hasTraining || hasCompetition) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            // Optional: Add a small dot if needed, but background color is enough
         }
     }
 }

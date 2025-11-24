@@ -75,7 +75,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR IGNORE INTO `competition_table` (`id`,`date`,`name`,`event`,`result`,`position`) VALUES (nullif(?, 0),?,?,?,?,?)";
+        return "INSERT OR IGNORE INTO `competition_table` (`id`,`date`,`name`,`location`,`events`) VALUES (nullif(?, 0),?,?,?,?)";
       }
 
       @Override
@@ -84,9 +84,9 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         statement.bindLong(1, entity.getId());
         statement.bindLong(2, entity.getDate());
         statement.bindString(3, entity.getName());
-        statement.bindString(4, entity.getEvent());
-        statement.bindString(5, entity.getResult());
-        statement.bindLong(6, entity.getPosition());
+        statement.bindString(4, entity.getLocation());
+        final String _tmp = __converters.toCompetitionEventList(entity.getEvents());
+        statement.bindString(5, _tmp);
       }
     };
     this.__deletionAdapterOfTraining = new EntityDeletionOrUpdateAdapter<Training>(__db) {
@@ -138,7 +138,7 @@ public final class TrackLogDao_Impl implements TrackLogDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "UPDATE OR ABORT `competition_table` SET `id` = ?,`date` = ?,`name` = ?,`event` = ?,`result` = ?,`position` = ? WHERE `id` = ?";
+        return "UPDATE OR ABORT `competition_table` SET `id` = ?,`date` = ?,`name` = ?,`location` = ?,`events` = ? WHERE `id` = ?";
       }
 
       @Override
@@ -147,10 +147,10 @@ public final class TrackLogDao_Impl implements TrackLogDao {
         statement.bindLong(1, entity.getId());
         statement.bindLong(2, entity.getDate());
         statement.bindString(3, entity.getName());
-        statement.bindString(4, entity.getEvent());
-        statement.bindString(5, entity.getResult());
-        statement.bindLong(6, entity.getPosition());
-        statement.bindLong(7, entity.getId());
+        statement.bindString(4, entity.getLocation());
+        final String _tmp = __converters.toCompetitionEventList(entity.getEvents());
+        statement.bindString(5, _tmp);
+        statement.bindLong(6, entity.getId());
       }
     };
     this.__preparedStmtOfDeleteTrainingByDate = new SharedSQLiteStatement(__db) {
@@ -490,9 +490,8 @@ public final class TrackLogDao_Impl implements TrackLogDao {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
           final int _cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(_cursor, "name");
-          final int _cursorIndexOfEvent = CursorUtil.getColumnIndexOrThrow(_cursor, "event");
-          final int _cursorIndexOfResult = CursorUtil.getColumnIndexOrThrow(_cursor, "result");
-          final int _cursorIndexOfPosition = CursorUtil.getColumnIndexOrThrow(_cursor, "position");
+          final int _cursorIndexOfLocation = CursorUtil.getColumnIndexOrThrow(_cursor, "location");
+          final int _cursorIndexOfEvents = CursorUtil.getColumnIndexOrThrow(_cursor, "events");
           final List<Competition> _result = new ArrayList<Competition>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final Competition _item;
@@ -502,13 +501,13 @@ public final class TrackLogDao_Impl implements TrackLogDao {
             _tmpDate = _cursor.getLong(_cursorIndexOfDate);
             final String _tmpName;
             _tmpName = _cursor.getString(_cursorIndexOfName);
-            final String _tmpEvent;
-            _tmpEvent = _cursor.getString(_cursorIndexOfEvent);
-            final String _tmpResult;
-            _tmpResult = _cursor.getString(_cursorIndexOfResult);
-            final int _tmpPosition;
-            _tmpPosition = _cursor.getInt(_cursorIndexOfPosition);
-            _item = new Competition(_tmpId,_tmpDate,_tmpName,_tmpEvent,_tmpResult,_tmpPosition);
+            final String _tmpLocation;
+            _tmpLocation = _cursor.getString(_cursorIndexOfLocation);
+            final List<CompetitionEvent> _tmpEvents;
+            final String _tmp;
+            _tmp = _cursor.getString(_cursorIndexOfEvents);
+            _tmpEvents = __converters.fromCompetitionEventList(_tmp);
+            _item = new Competition(_tmpId,_tmpDate,_tmpName,_tmpLocation,_tmpEvents);
             _result.add(_item);
           }
           return _result;
@@ -539,9 +538,8 @@ public final class TrackLogDao_Impl implements TrackLogDao {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
           final int _cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(_cursor, "name");
-          final int _cursorIndexOfEvent = CursorUtil.getColumnIndexOrThrow(_cursor, "event");
-          final int _cursorIndexOfResult = CursorUtil.getColumnIndexOrThrow(_cursor, "result");
-          final int _cursorIndexOfPosition = CursorUtil.getColumnIndexOrThrow(_cursor, "position");
+          final int _cursorIndexOfLocation = CursorUtil.getColumnIndexOrThrow(_cursor, "location");
+          final int _cursorIndexOfEvents = CursorUtil.getColumnIndexOrThrow(_cursor, "events");
           final List<Competition> _result = new ArrayList<Competition>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final Competition _item;
@@ -551,13 +549,13 @@ public final class TrackLogDao_Impl implements TrackLogDao {
             _tmpDate = _cursor.getLong(_cursorIndexOfDate);
             final String _tmpName;
             _tmpName = _cursor.getString(_cursorIndexOfName);
-            final String _tmpEvent;
-            _tmpEvent = _cursor.getString(_cursorIndexOfEvent);
-            final String _tmpResult;
-            _tmpResult = _cursor.getString(_cursorIndexOfResult);
-            final int _tmpPosition;
-            _tmpPosition = _cursor.getInt(_cursorIndexOfPosition);
-            _item = new Competition(_tmpId,_tmpDate,_tmpName,_tmpEvent,_tmpResult,_tmpPosition);
+            final String _tmpLocation;
+            _tmpLocation = _cursor.getString(_cursorIndexOfLocation);
+            final List<CompetitionEvent> _tmpEvents;
+            final String _tmp;
+            _tmp = _cursor.getString(_cursorIndexOfEvents);
+            _tmpEvents = __converters.fromCompetitionEventList(_tmp);
+            _item = new Competition(_tmpId,_tmpDate,_tmpName,_tmpLocation,_tmpEvents);
             _result.add(_item);
           }
           return _result;
@@ -590,9 +588,8 @@ public final class TrackLogDao_Impl implements TrackLogDao {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
           final int _cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(_cursor, "name");
-          final int _cursorIndexOfEvent = CursorUtil.getColumnIndexOrThrow(_cursor, "event");
-          final int _cursorIndexOfResult = CursorUtil.getColumnIndexOrThrow(_cursor, "result");
-          final int _cursorIndexOfPosition = CursorUtil.getColumnIndexOrThrow(_cursor, "position");
+          final int _cursorIndexOfLocation = CursorUtil.getColumnIndexOrThrow(_cursor, "location");
+          final int _cursorIndexOfEvents = CursorUtil.getColumnIndexOrThrow(_cursor, "events");
           final Competition _result;
           if (_cursor.moveToFirst()) {
             final long _tmpId;
@@ -601,13 +598,13 @@ public final class TrackLogDao_Impl implements TrackLogDao {
             _tmpDate = _cursor.getLong(_cursorIndexOfDate);
             final String _tmpName;
             _tmpName = _cursor.getString(_cursorIndexOfName);
-            final String _tmpEvent;
-            _tmpEvent = _cursor.getString(_cursorIndexOfEvent);
-            final String _tmpResult;
-            _tmpResult = _cursor.getString(_cursorIndexOfResult);
-            final int _tmpPosition;
-            _tmpPosition = _cursor.getInt(_cursorIndexOfPosition);
-            _result = new Competition(_tmpId,_tmpDate,_tmpName,_tmpEvent,_tmpResult,_tmpPosition);
+            final String _tmpLocation;
+            _tmpLocation = _cursor.getString(_cursorIndexOfLocation);
+            final List<CompetitionEvent> _tmpEvents;
+            final String _tmp;
+            _tmp = _cursor.getString(_cursorIndexOfEvents);
+            _tmpEvents = __converters.fromCompetitionEventList(_tmp);
+            _result = new Competition(_tmpId,_tmpDate,_tmpName,_tmpLocation,_tmpEvents);
           } else {
             _result = null;
           }

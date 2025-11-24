@@ -30,7 +30,7 @@ fun AddEntryScreen(
     viewModel: TrackLogViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
+
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Training", "Competition")
 
@@ -48,9 +48,29 @@ fun AddEntryScreen(
 
     // Competition State
     var cName by remember { mutableStateOf("") }
-    var cEvent by remember { mutableStateOf("") }
-    var cResult by remember { mutableStateOf("") }
-    var cPosition by remember { mutableStateOf("") }
+    var cLocation by remember { mutableStateOf("AL") } // AL or PC
+    
+    class LocalEventState {
+
+        var performance by mutableStateOf("")
+        var distanceMeters by mutableStateOf("")
+        var wind by mutableStateOf("")
+        
+        // Helper to check if wind is needed
+        val isWindNeeded: Boolean
+            get() {
+                val dist = distanceMeters.toIntOrNull() ?: 0
+                return cLocation == "AL" && dist > 0 && dist < 400
+            }
+            
+        // Helper to check validity
+        val isInvalid: Boolean
+            get() {
+                val w = wind.toDoubleOrNull()
+                return isWindNeeded && w != null && w > 2.0
+            }
+    }
+    val cEvents = remember { mutableStateListOf<LocalEventState>() }
 
     // Load existing data
     LaunchedEffect(dateMillis) {
@@ -71,13 +91,23 @@ fun AddEntryScreen(
             if (competition != null) {
                 selectedTab = 1
                 cName = competition.name
-                cEvent = competition.event
-                cResult = competition.result
-                cPosition = competition.position.toString()
+                cLocation = competition.location
+                cEvents.clear()
+                competition.events.forEach { event ->
+                    val state = LocalEventState()
+
+                    state.performance = event.performance
+                    state.distanceMeters = event.distanceMeters?.toString() ?: ""
+                    state.wind = event.wind ?: ""
+                    cEvents.add(state)
+                }
             } else {
-                // Default: Add one empty distance block for training
+                // Default: Add one empty distance block for training and one for competition
                 if (tDistances.isEmpty()) {
                     tDistances.add(LocalDistanceState())
+                }
+                if (cEvents.isEmpty()) {
+                    cEvents.add(LocalEventState())
                 }
             }
         }
@@ -224,42 +254,121 @@ fun AddEntryScreen(
 
         } else {
             // Competition Form
-            Column(modifier = Modifier.weight(1f)) {
-                OutlinedTextField(
-                    value = cName,
-                    onValueChange = { cName = it },
-                    label = { Text("Competition Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = cEvent,
-                    onValueChange = { cEvent = it },
-                    label = { Text("Event (e.g. 100m)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = cResult,
-                    onValueChange = { cResult = it },
-                    label = { Text("Result") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = cPosition,
-                    onValueChange = { cPosition = it },
-                    label = { Text("Position") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    OutlinedTextField(
+                        value = cName,
+                        onValueChange = { cName = it },
+                        label = { Text("Competition Name") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        FilterChip(
+                            selected = cLocation == "AL",
+                            onClick = { cLocation = "AL" },
+                            label = { Text("Aire Libre") }
+                        )
+                        FilterChip(
+                            selected = cLocation == "PC",
+                            onClick = { cLocation = "PC" },
+                            label = { Text("Pista Cubierta") }
+                        )
+                    }
+                }
+
+                itemsIndexed(cEvents) { index, eventState ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Event ${index + 1}", style = MaterialTheme.typography.titleMedium)
+                                Spacer(modifier = Modifier.weight(1f))
+                                IconButton(onClick = { cEvents.removeAt(index) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Remove Event")
+                                }
+                            }
+                            
+
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                OutlinedTextField(
+                                    value = eventState.distanceMeters,
+                                    onValueChange = { eventState.distanceMeters = it },
+                                    label = { Text("Distance (m)") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                OutlinedTextField(
+                                    value = eventState.performance,
+                                    onValueChange = { eventState.performance = it },
+                                    label = { Text("Performance") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
+                            if (eventState.isWindNeeded) {
+                                OutlinedTextField(
+                                    value = eventState.wind,
+                                    onValueChange = { eventState.wind = it },
+                                    label = { Text("Wind (m/s)") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // Allow negative? Yes, Number usually allows it or we can use Text
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                if (eventState.isInvalid) {
+                                    Text(
+                                        text = "Invalid Performance (Wind > 2.0)",
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = { cEvents.add(LocalEventState()) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add Another Event")
+                    }
+                }
             }
 
             Button(
                 onClick = {
+                    val events = cEvents.map {
+                        com.example.tracklog.data.CompetitionEvent(
+                            performance = it.performance,
+                            distanceMeters = it.distanceMeters.toIntOrNull(),
+                            wind = if (it.isWindNeeded) it.wind else null,
+                            isInvalid = it.isInvalid
+                        )
+                    }.filter { it.distanceMeters != null && it.distanceMeters > 0 }
+
                     val competition = Competition(
                         date = dateMillis,
                         name = cName,
-                        event = cEvent,
-                        result = cResult,
-                        position = cPosition.toIntOrNull() ?: 0
+                        location = cLocation,
+                        events = events
                     )
                     viewModel.saveCompetition(competition)
                     navigateBack()

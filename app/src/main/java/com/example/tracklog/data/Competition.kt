@@ -9,7 +9,6 @@ data class Competition(
     val id: Long = 0,
     val date: Long, // Epoch millis
     val name: String,
-    val event: String, // e.g., "100m", "Long Jump"
-    val result: String, // e.g., "10.5s", "7.20m"
-    val position: Int
+    val location: String, // "AL" or "PC"
+    val events: List<CompetitionEvent>
 )

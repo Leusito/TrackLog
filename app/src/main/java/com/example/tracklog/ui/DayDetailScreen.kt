@@ -57,9 +57,18 @@ fun DayDetailScreen(
                 Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text("Name: ${comp.name}")
-                        Text("Event: ${comp.event}")
-                        Text("Result: ${comp.result}")
-                        Text("Pos: ${comp.position}")
+                        Text("Location: ${comp.location}")
+                        comp.events.forEach { event ->
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("Distance: ${event.distanceMeters ?: 0}m")
+                            Text("Result: ${event.performance}")
+                            if (event.wind != null) {
+                                Text("Wind: ${event.wind}")
+                            }
+                            if (event.isInvalid) {
+                                Text("Invalid (Wind > 2.0)", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
                     }
                 }
             }

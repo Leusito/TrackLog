@@ -30,4 +30,16 @@ class Converters {
     fun toTrainingDistanceList(list: List<TrainingDistance>): String {
         return gson.toJson(list)
     }
+
+    @TypeConverter
+    fun fromCompetitionEventList(value: String): List<CompetitionEvent> {
+        if (value.isBlank()) return emptyList()
+        val type = object : TypeToken<List<CompetitionEvent>>() {}.type
+        return gson.fromJson(value, type)
+    }
+
+    @TypeConverter
+    fun toCompetitionEventList(list: List<CompetitionEvent>): String {
+        return gson.toJson(list)
+    }
 }

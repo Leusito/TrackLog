@@ -31,13 +31,13 @@ public final class TrackLogDatabase_Impl extends TrackLogDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(3) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(4) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `training_table` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `description` TEXT NOT NULL, `distances` TEXT NOT NULL, `notes` TEXT NOT NULL)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `competition_table` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `name` TEXT NOT NULL, `event` TEXT NOT NULL, `result` TEXT NOT NULL, `position` INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `competition_table` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `name` TEXT NOT NULL, `location` TEXT NOT NULL, `events` TEXT NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '592c554d17636c598870a27f1bc3b246')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3c8781bbe0787b413359641aecbef0e1')");
       }
 
       @Override
@@ -102,13 +102,12 @@ public final class TrackLogDatabase_Impl extends TrackLogDatabase {
                   + " Expected:\n" + _infoTrainingTable + "\n"
                   + " Found:\n" + _existingTrainingTable);
         }
-        final HashMap<String, TableInfo.Column> _columnsCompetitionTable = new HashMap<String, TableInfo.Column>(6);
+        final HashMap<String, TableInfo.Column> _columnsCompetitionTable = new HashMap<String, TableInfo.Column>(5);
         _columnsCompetitionTable.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCompetitionTable.put("date", new TableInfo.Column("date", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsCompetitionTable.put("name", new TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsCompetitionTable.put("event", new TableInfo.Column("event", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsCompetitionTable.put("result", new TableInfo.Column("result", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsCompetitionTable.put("position", new TableInfo.Column("position", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCompetitionTable.put("location", new TableInfo.Column("location", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsCompetitionTable.put("events", new TableInfo.Column("events", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysCompetitionTable = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesCompetitionTable = new HashSet<TableInfo.Index>(0);
         final TableInfo _infoCompetitionTable = new TableInfo("competition_table", _columnsCompetitionTable, _foreignKeysCompetitionTable, _indicesCompetitionTable);
@@ -120,7 +119,7 @@ public final class TrackLogDatabase_Impl extends TrackLogDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "592c554d17636c598870a27f1bc3b246", "9badb00ba3826bdfd4721c1b6172f9ab");
+    }, "3c8781bbe0787b413359641aecbef0e1", "8601f7a345739757651a4d67c55de57d");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;
